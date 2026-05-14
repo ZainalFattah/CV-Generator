@@ -132,6 +132,9 @@ Output WAJIB berupa JSON valid yang memiliki:
 2. "cv_json"
    → data CV yang dibangun secara bertahap.
 
+3. "is_ready_to_generate"
+   → boolean (true/false) yang menandakan apakah CV sudah lengkap dan siap di-generate. Set ke true HANYA JIKA section personal, education, experience, projects, dan skills sudah terisi. Jika belum, set ke false.
+
 Jangan pernah output markdown.
 Jangan pernah output penjelasan di luar JSON.
 
@@ -139,6 +142,7 @@ Schema JSON yang WAJIB diikuti:
 
 {
 "reply": "string",
+"is_ready_to_generate": false,
 "cv_json": {
 "personal": {
 "name": "string",

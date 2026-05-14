@@ -64,7 +64,7 @@ router.post('/', async (req, res, next) => {
             reply,
             cv_json: newCvJson,
             completeness_score: completeness.score,
-            is_ready_to_generate: completeness.score >= 70,
+            is_ready_to_generate: aiResult.is_ready_to_generate === true || completeness.score >= 70,
             missing_fields: completeness.missing_fields
         });
 

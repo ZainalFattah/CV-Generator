@@ -31,9 +31,11 @@ app.use('/api/', limiter);
 
 import chatRouter from './routes/chat.js';
 import roastRouter from './routes/roast.js';
+import exportRouter from './routes/export.js';
 
 app.use('/api/chat', chatRouter);
 app.use('/api/roast', roastRouter);
+app.use('/api/export', exportRouter);
 
 // Cleanup task (daily)
 setInterval(() => {
