@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useCVStore } from '../store/cvStore';
-import { Send, FileText } from 'lucide-react';
+import { Send, FileText, Download } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -9,8 +9,11 @@ function ChatCV() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isReadyToGenerate, setIsReadyToGenerate] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState(null);
 
-  const { sessionId, setSessionId, setCvData, completenessScore, setCompletenessScore } = useCVStore();
+  const { sessionId, setSessionId, cvData, setCvData, completenessScore, setCompletenessScore } = useCVStore();
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -19,7 +22,7 @@ function ChatCV() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isReadyToGenerate]);
 
   useEffect(() => {
     if (messages.length === 0 && !loading) {
@@ -53,12 +56,34 @@ function ChatCV() {
       }
 
       setCompletenessScore(response.data.completeness_score);
+      setIsReadyToGenerate(response.data.is_ready_to_generate);
 
     } catch (error) {
       console.error("Chat error:", error);
       setMessages(prev => [...prev, { role: 'ai', content: 'Maaf, terjadi kesalahan. Bisa ulangi pesan terakhir?' }]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generatePDF = async () => {
+    if (!cvData) return;
+    setGeneratingPdf(true);
+    try {
+      const response = await axios.post(`${API_URL}/export`, {
+        cv_json: cvData
+      }, {
+        responseType: 'blob'
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      alert("Failed to generate PDF");
+    } finally {
+      setGeneratingPdf(false);
     }
   };
 
@@ -89,6 +114,37 @@ function ChatCV() {
             <div className="flex justify-start">
                <div className="border border-border text-muted p-3 blink">PROCESSING...</div>
             </div>
+          )}
+
+          {isReadyToGenerate && (
+             <div className="flex flex-col items-center mt-6 mb-4 p-4 border border-accent bg-surface">
+                 <div className="text-accent mb-4 text-center blink">
+                    [ SYSTEM NOTIFICATION: CV DATA COMPLETE ]
+                 </div>
+                 <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                    <button
+                        onClick={generatePDF}
+                        disabled={generatingPdf}
+                        className="px-6 py-3 border border-accent text-accent hover:bg-accent hover:text-bg font-bold retro-text transition-colors flex items-center justify-center disabled:opacity-50"
+                    >
+                        <FileText className="mr-2" size={18} />
+                        {generatingPdf ? 'GENERATING...' : 'GENERATE CV'}
+                    </button>
+                    <a
+                        href={pdfUrl || '#'}
+                        download="my-cv.pdf"
+                        onClick={(e) => {
+                            if (!pdfUrl) {
+                                e.preventDefault();
+                            }
+                        }}
+                        className={`px-6 py-3 border border-accent font-bold retro-text transition-colors flex items-center justify-center ${pdfUrl ? 'bg-accent text-bg hover:opacity-90' : 'text-muted border-muted cursor-not-allowed opacity-50'}`}
+                    >
+                        <Download className="mr-2" size={18} />
+                        DOWNLOAD PDF
+                    </a>
+                 </div>
+             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
