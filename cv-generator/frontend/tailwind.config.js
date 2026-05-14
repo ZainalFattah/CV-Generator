@@ -7,19 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#0A0A0F',
-        surface: '#13131A',
-        border: '#1E1E2E',
-        accent: '#6C63FF',
-        'accent-2': '#00D4AA',
-        warning: '#FF6B35',
-        text: '#E8E8F0',
-        muted: '#6B6B80',
+        bg: '#000000',
+        surface: '#0A0A0A',
+        border: '#00FF00', // Neon green border for retro feel
+        accent: '#00FF00', // Neon green
+        'accent-2': '#FF00FF', // Magenta
+        warning: '#FFB000', // Amber
+        text: '#00FF00', // Neon green text
+        muted: '#008800',
+        cyan: '#00FFFF', // Cyan
       },
       fontFamily: {
-        display: ['Syne', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ['"Courier New"', 'Courier', 'monospace'],
+        body: ['"Courier New"', 'Courier', 'monospace'],
+        mono: ['"Courier New"', 'Courier', 'monospace'],
       }
     },
   },
