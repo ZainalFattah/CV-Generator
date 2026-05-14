@@ -123,7 +123,7 @@ cv-generator/
 {
   "runtime": "Node.js v20 LTS",
   "framework": "Express.js v4",
-  "ai": "@anthropic-ai/sdk",
+  "ai": "Google Gemini API, Model Gemini 2.5 Flash" API Key akan ditaruh di file .env,
   "database": "better-sqlite3",
   "pdf": "pdfkit",
   "upload": "multer (disk storage, bukan memory)",
