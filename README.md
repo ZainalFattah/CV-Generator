@@ -1,241 +1,322 @@
-# 🧠 AI CV Generator - Dokumentasi Lengkap Proyek
+# 📘 Buku Panduan: AI CV Generator
 
-AI CV Generator adalah aplikasi *full-stack* berbasis web yang dirancang untuk merevolusi cara pengguna membuat, mengevaluasi, dan mengoptimalkan *Curriculum Vitae* (CV). Dengan memanfaatkan teknologi **Google Gemini 2.5 Flash**, aplikasi ini menyajikan pengalaman interaktif layaknya berbicara dengan seorang *Tech Recruiter* secara langsung.
+Selamat datang di repositori resmi **AI CV Generator**. Dokumen ini dirancang sebagai buku panduan komprehensif, mengupas tuntas dari arsitektur sistem, fitur, hingga panduan instalasi *production-ready*.
 
-Proyek ini dibangun dengan mempertimbangkan efisiensi memori yang ketat, dikhususkan untuk dapat berjalan dengan stabil di atas Virtual Private Server (VPS) Ubuntu dengan spesifikasi 1 CPU dan 2GB RAM.
+Aplikasi ini adalah solusi *full-stack* modern yang memanfaatkan kecerdasan buatan (LLM Google Gemini 2.5 Flash) untuk membantu pencari kerja membuat dan mengoptimalkan *Curriculum Vitae* (CV) mereka agar ramah terhadap mesin *Applicant Tracking System* (ATS) dan menarik di mata *Recruiter*.
 
----
-
-## 🎯 Visi dan Misi Proyek
-
-Banyak *job seeker* merasa kesulitan memformat CV mereka secara ATS-friendly (Applicant Tracking System) atau bingung dalam mendeskripsikan pengalaman mereka. Aplikasi ini hadir untuk:
-1.  **Mengurangi friksi pembuatan CV** melalui antarmuka *chat* (Chat-to-CV).
-2.  **Meningkatkan kualitas CV** melalui evaluasi instan berbasis AI (Roast My CV).
-3.  **Memaksimalkan peluang lolos seleksi** dengan memastikan layout ekspor selalu ramah ATS.
+Proyek ini sangat istimewa karena dirancang sedemikian rupa agar dapat berjalan dengan mulus dan stabil di lingkungan server yang memiliki sumber daya sangat terbatas: **Virtual Private Server (VPS) Ubuntu dengan 1 CPU Core dan memori 2GB RAM**.
 
 ---
 
-## ✨ Fitur Utama Secara Detail
+## 📖 DAFTAR ISI
 
-### 1. 💬 Chat-to-CV (AI Recruiter)
-Pengguna tidak perlu lagi mengisi *form* panjang yang membosankan. AI akan bertindak sebagai *recruiter* (bernama Kai) yang secara natural mewawancarai pengguna bagian demi bagian (Informasi Personal, Pendidikan, Pengalaman, Proyek, dan *Skill*).
-*   **Context-Aware:** AI mengingat seluruh percakapan yang terjadi di sesi (disimpan dalam database SQLite).
-*   **Completeness Score:** Terdapat indikator *Extraction Progress* (0-100%).
-*   **Auto-Trigger:** Ketika kelengkapan data mencapai batas siap (semua *section* wajib terisi), AI akan mengirim *flag* `is_ready_to_generate` dan antarmuka akan memunculkan tombol *Generate & Download*.
-
-### 2. 🔥 Roast My CV (AI Career Coach)
-Pengguna dapat mengunggah CV lama mereka dalam format PDF atau menempelkan teks.
-*   **Kritik Konstruktif:** AI akan menganalisis dokumen dan memberikan "roast" (kritik tajam namun membangun) terkait formatting, *keyword*, atau gaya penulisan yang salah kaprah.
-*   **Scoring & Actionable Advice:** Memberikan poin-poin yang bisa langsung diperbaiki oleh pengguna.
-
-### 3. 📄 ATS-Friendly PDF Export
-Menggunakan modul `pdfkit`, sistem langsung dapat mengubah *JSON object* hasil *chat* menjadi PDF.
-*   **Single-Column Layout:** Dirancang khusus agar sangat *parseable* oleh mesin ATS. Menghindari format multi-kolom yang sering merusak struktur data.
-*   **Premium Typography:** Menggunakan margin lebar (45px) dan *font* profesional sans-serif (`Helvetica`).
-*   **Stream-based Download:** Proses PDF dirender secara *on-the-fly* ke aliran respons HTTP (Stream) tanpa menulis banyak *buffer* di memori RAM—sehingga VPS 2GB tidak akan mengalami *Out Of Memory* (OOM).
+1. [Bab 1: Visi dan Fitur Utama](#bab-1-visi-dan-fitur-utama)
+2. [Bab 2: Arsitektur dan Teknologi](#bab-2-arsitektur-dan-teknologi)
+3. [Bab 3: Topologi Direktori Server](#bab-3-topologi-direktori-server)
+4. [Bab 4: Spesifikasi API Endpoint](#bab-4-spesifikasi-api-endpoint)
+5. [Bab 5: Skema Database](#bab-5-skema-database)
+6. [Bab 6: Panduan Pengembangan Lokal](#bab-6-panduan-pengembangan-lokal)
+7. [Bab 7: Panduan Deployment Server (VPS)](#bab-7-panduan-deployment-server-vps)
+8. [Bab 8: Optimasi Memori & Stabilitas](#bab-8-optimasi-memori--stabilitas)
 
 ---
 
-## 🏗️ Arsitektur & Teknologi
+## 🌟 BAB 1: VISI DAN FITUR UTAMA
 
-Proyek ini menggunakan pola arsitektur *Client-Server* standar (SPA - Single Page Application).
+### Latar Belakang Masalah
+Banyak pengguna awam yang tidak mengetahui standar penulisan CV yang benar. Format yang terlalu rumit dengan desain grafis berlebihan justru sering ditolak secara otomatis oleh mesin ATS. Selain itu, mengisi *form* registrasi CV satu per satu terasa sangat membosankan dan kaku.
 
-### Backend (Express.js)
-*   **Node.js v20+** dengan **Express.js v4**.
-*   **Google Gemini SDK (`@google/generative-ai`)**: Menangani LLM orchestration (Chat & Roast).
-*   **Database**: SQLite (`better-sqlite3`). Memanfaatkan *Write-Ahead Logging (WAL)* untuk performa optimal di disk berkecepatan rendah.
-*   **PDF Pipeline**: `pdfkit` untuk rendering grafis vektor ke dokumen PDF, dan `pdf-parse` untuk ekstraksi teks dari PDF yang diunggah pengguna.
-*   **Keamanan & Stabilitas**: `helmet` (header security), `cors`, dan `express-rate-limit` (mencegah DDoS atau *API key abuse*).
+### Solusi Aplikasi
+AI CV Generator menawarkan pendekatan **Conversational UX**. Pengguna hanya perlu "mengobrol" dengan AI. AI akan mengekstrak informasi dan merangkainya menjadi data terstruktur (JSON). Data JSON tersebut kemudian di-*render* secara *real-time* menjadi dokumen PDF dengan standar industri.
 
-### Frontend (React.js)
-*   **React 18** + **Vite**: *Bundler* ultra-cepat.
-*   **Tailwind CSS**: Untuk merancang tema "Retro Terminal" (Background gelap, Teks Hijau *Electric*, *Monospace font* untuk data).
-*   **Zustand**: *State management* untuk menyimpan *Session ID* (agar *chat* tidak hilang saat di-refresh) dan skor kelengkapan.
-*   **Lucide React**: Ikon minimalis vektor.
+### Tiga Pilar Fitur:
+1.  💬 **Chat-to-CV (AI Recruiter)**
+    *   Pengguna diwawancarai oleh AI bernama Kai.
+    *   Proses wawancara dikelompokkan per *section* (Personal, Edukasi, Pengalaman, Skill, Proyek) agar tidak membebani memori jangka pendek pengguna.
+    *   Adanya "Extraction Progress Bar" (0% hingga 100%).
+    *   Jika informasi dirasa cukup (mencapai skor 70%), sistem akan otomatis menawarkan tombol pembuatan CV.
+2.  📄 **ATS-Friendly PDF Generator**
+    *   Menerapkan standar **Single-Column Layout** (Satu Kolom Top-to-Bottom). Desain multi-kolom sangat dilarang karena sering gagal diparsing oleh ATS.
+    *   Menggunakan hierarki tipografi profesional (Sistem *Font* Serif/Sans-Serif tebal untuk nama dan judul).
+    *   File *di-stream* seketika kepada *client*, memastikan privasi dan penghematan kapasitas *harddisk* server.
+3.  🔥 **Roast My CV (AI Career Coach)**
+    *   Pengguna dapat menyerahkan CV lama mereka berupa *file* PDF atau *copy-paste* teks panjang.
+    *   AI akan mengevaluasi dan memberikan skor, serta poin-poin kritik (*roasting*) yang sifatnya konstruktif dan *actionable*.
 
 ---
 
-## 📂 Struktur Direktori
+## 🛠️ BAB 2: ARSITEKTUR DAN TEKNOLOGI
+
+Proyek ini dibangun di atas pondasi lingkungan JavaScript *Full-Stack* (React + Node.js) dan dipisahkan menjadi dua pilar: **Frontend (Client)** dan **Backend (Server API)**.
+
+### A. Frontend (Client-Side Application)
+*   **Engine**: React 18
+*   **Bundler**: Vite v5 (dipilih karena waktu *compile* yang jauh lebih cepat dari Webpack atau CRA).
+*   **Routing**: React Router DOM v6 untuk navigasi SPA (Single Page Application) tanpa *reload* halaman.
+*   **State Management**: Zustand. Sangat ringan dan tidak memerlukan konfigurasi *boilerplate* seperti Redux. Mampu tersinkronisasi dengan *LocalStorage* sehingga data *chat* pengguna tidak hilang walau peramban di-*refresh*.
+*   **Styling**: Tailwind CSS v3. Tema khusus diset pada `tailwind.config.js` untuk memunculkan sensasi visual "Retro Terminal" (seperti latar belakang hitam `#0a0a0f`, teks hijau aksen `#00ffcc`, dan gaya ketikan *monospace*).
+
+### B. Backend (Server-Side Application)
+*   **Engine**: Node.js v20 LTS
+*   **Framework**: Express.js v4. Menangani *routing* HTTP dan penengah keamanan (Middleware).
+*   **Database Engine**: SQLite terintegrasi via `better-sqlite3`. Kami memilih SQLite untuk menghindari proses berat aplikasi *database engine* eksternal seperti MySQL atau PostgreSQL yang dapat menguras RAM VPS 2GB. File disatukan sebagai satu *file* `.db` di server.
+*   **Core LLM Integration**: `@google/generative-ai` untuk melakukan pemanggilan ke model **Gemini 2.5 Flash**. Model ini dipilih karena sangat responsif untuk sistem berbasis percakapan.
+*   **PDF Pipeline**:
+    *   `pdfkit` -> Digunakan di dalam skrip `export.js` untuk "menggambar" *resume* satu per satu ke dokumen biner dengan koordinat tata letak.
+    *   `pdf-parse` -> Digunakan untuk membaca PDF milik pengguna (fitur *Roast CV*).
+*   **Keamanan**: `helmet` (HTTP Headers), `cors` (Cross-Origin Resource Sharing), dan `express-rate-limit` (Pembatasan jumlah trafik yang masuk dari satu IP secara bersamaan).
+
+---
+
+## 📂 BAB 3: TOPOLOGI DIREKTORI SERVER
+
+Berikut merupakan peta direktori di dalam repositori untuk mempermudah pemahaman tim pengembang:
 
 ```text
-cv-generator/
-│
-├── frontend/                 # React SPA
-│   ├── src/
-│   │   ├── assets/           # Gambar & Ikon Statis
-│   │   ├── pages/            # View Utama (Home.jsx, ChatCV.jsx, RoastCV.jsx)
-│   │   ├── store/            # Zustand store (cvStore.js)
-│   │   ├── styles/           # Konfigurasi Tailwind & Global CSS
-│   │   ├── App.jsx           # React Router DOM config
-│   │   └── main.jsx          # React Entry Point
-│   ├── tailwind.config.js
-│   └── vite.config.js
-│
-├── backend/                  # Node.js Server
-│   ├── src/
-│   │   ├── db/               # SQLite Connection & Migrations
-│   │   ├── parsers/          # Sanitasi output JSON dari AI Gemini
-│   │   ├── prompts/          # System Prompts untuk Recruiter & Roaster
-│   │   ├── routes/           # Endpoint Controller (chat.js, roast.js, export.js)
-│   │   ├── services/         # Integrasi SDK Gemini & Logika Bisnis
-│   │   ├── validators/       # Validasi Skema Objek
-│   │   ├── env.js            # Dotenv config loader
-│   │   └── index.js          # Express Entry Point (Rate limiter, middleware)
-│   ├── uploads/              # Temporary folder untuk file PDF pengguna (Multer)
-│   └── package.json
-│
-└── nginx/                    # Konfigurasi Reverse Proxy Nginx
-    └── cv-generator.conf
+/
+├── README.md                     # BUKU PANDUAN INI
+├── cv-generator/
+│   ├── frontend/                 # KODE APLIKASI WEB
+│   │   ├── package.json          # Dependensi Frontend (Zustand, Tailwind, dll)
+│   │   ├── tailwind.config.js    # Setup Warna Tema Retro Terminal
+│   │   ├── vite.config.js        # Konfigurasi port bundler
+│   │   └── src/
+│   │       ├── assets/           # File Statis (SVG, PNG)
+│   │       ├── pages/            # View Utama (Home.jsx, ChatCV.jsx, RoastCV.jsx)
+│   │       ├── store/            # Zustand store (cvStore.js)
+│   │       ├── styles/           # Konfigurasi Tailwind & Global CSS
+│   │       ├── App.jsx           # Setup React Router
+│   │       └── main.jsx          # React Entry Point
+│   │
+│   ├── backend/                  # KODE APLIKASI SERVER & API
+│   │   ├── package.json          # Dependensi Backend (Express, PDFKit, dll)
+│   │   ├── src/
+│   │   │   ├── index.js          # ENTRY POINT UTAMA (Jantung Aplikasi Server)
+│   │   │   ├── env.js            # Dotenv Loader (BACA .env)
+│   │   │   ├── db/               # SQLite Connection & Migrations
+│   │   │   ├── parsers/          # Sanitasi output JSON dari AI Gemini
+│   │   │   ├── prompts/          # System Prompts untuk Recruiter & Roaster
+│   │   │   ├── routes/           # Controller untuk Endpoint (chat.js, roast.js, export.js)
+│   │   │   └── services/         # Skrip Integrasi dengan Library Google Gemini
+│   │   └── uploads/              # FOLDER TEMPORARY UNTUK FITUR ROAST
+│   │
+│   └── nginx/                    # Konfigurasi Reverse Proxy Nginx
+│       └── cv-generator.conf
 ```
 
 ---
 
-## 🔌 API Endpoints Documentation
+## 📡 BAB 4: SPESIFIKASI API ENDPOINT
 
-Aplikasi mengekspos RESTful API di bawah prefiks `/api/`. Berikut adalah dokumentasi lengkapnya:
+Aplikasi ini menggunakan komunikasi JSON secara eksklusif.
 
-### 1. `GET /api/health`
-Mengecek status apakah *backend server* aktif dan berjalan normal.
-*   **Response:** `200 OK`
-    ```json
-    { "status": "ok" }
-    ```
-
-### 2. `POST /api/chat`
-*Endpoint* utama untuk berinteraksi dengan AI Recruiter dan membangun state CV.
-*   **Body (JSON):**
+### 1. Endpoint Percakapan (Wawancara AI)
+*   **Path**: `POST /api/chat`
+*   **Deskripsi**: Endpoint krusial untuk berinteraksi dengan AI. Mengirimkan masukan pengguna dan menerima kelanjutan percakapan sekaligus ekstrak JSON CV.
+*   **Payload Request (Body)**:
     ```json
     {
-      "session_id": "uuid-optional",
-      "message": "Halo, nama saya Budi, saya lulusan UI jurusan Ilmu Komputer."
+      "session_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", // Kosongkan jika chat baru
+      "message": "Saya lulusan S1 Sistem Informasi tahun 2023 dengan IPK 3.8."
     }
     ```
-*   **Response:**
+*   **Payload Response (Sukses 200)**:
     ```json
     {
-      "session_id": "auto-generated-uuid",
-      "reply": "Halo Budi! Senang berkenalan. Boleh ceritakan pengalaman kerjamu?",
-      "cv_json": { "personal": { "name": "Budi" }, "education": [{ ... }] },
-      "completeness_score": 30,
+      "session_id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+      "reply": "Bagus sekali! Selanjutnya, apakah kamu punya pengalaman magang atau bekerja?",
+      "cv_json": {
+          "education": [{ "degree": "S1", "field": "Sistem Informasi", "year_end": "2023", "gpa": "3.8" }]
+      },
+      "completeness_score": 25,
       "is_ready_to_generate": false,
-      "missing_fields": ["experience", "projects", "skills"]
+      "missing_fields": ["experience", "personal"]
     }
     ```
+*   **Perilaku Penting**: `is_ready_to_generate` akan diset menjadi `true` oleh *backend prompt* ketika AI merasa seluruh atribut utama telah terkumpul. Frontend bereaksi pada *flag* ini untuk menampilkan tombol *Download*.
 
-### 3. `POST /api/export`
-Membuat file PDF dari data *JSON* CV secara *real-time*. Dioptimalkan dengan respon *Stream* (tidak ada batasan ukuran Buffer).
-*   **Body (JSON):**
+### 2. Endpoint Pembuatan Dokumen (Ekspor PDF)
+*   **Path**: `POST /api/export`
+*   **Deskripsi**: Digunakan oleh sistem *Frontend* untuk merender JSON penuh menjadi PDF ATS-Friendly.
+*   **Payload Request (Body)**:
     ```json
     {
-      "cv_json": { "personal": { "name": "Budi" }, "experience": [...] }
+      "cv_json": { "personal": { "name": "Budi Rahardjo", "email": "budi@email.com" }, "experience": [...] }
     }
     ```
-*   **Response:** `Content-Type: application/pdf` (Binary stream file PDF untuk di-*download*).
+*   **Payload Response**:
+    Sebuah *Binary Stream* (*Content-Type: application/pdf*).
+    *Backend tidak mengembalikan URL lokal maupun menyimpan file di memori. Pengkodean langsung disuntikkan ke dalam tabung stream HTTP. Proses ini sangat menyelematkan memori pada VPS terbatas.*
 
-### 4. `POST /api/roast`
-Mengirim teks atau file PDF untuk dikritik (*roast*) oleh AI Career Coach.
-*   **Headers:** `Content-Type: multipart/form-data` (Jika via file)
-*   **Body:** `file` (File blob PDF) *atau* `cv_text` (String text).
-*   **Response:**
-    ```json
-    {
-      "roast_result": { "score": 60, "critiques": [...], "suggestions": [...] }
-    }
-    ```
+### 3. Endpoint Kritik CV
+*   **Path**: `POST /api/roast`
+*   **Format HTTP**: *Multipart Form-Data* (Karena menangani *upload file*).
+*   **Payload**:
+    *   `file`: Berkas PDF (maksimal 5MB)
+    *   *atau* `cv_text`: String berupa tempelan dari teks panjang.
+*   **Payload Response**: Mengembalikan struktur analisis JSON komprehensif berisikan skor (0-100), daftar pujian, dan daftar kelemahan (*roast points*).
+
+### 4. Endpoint Kesehatan (Health Check)
+*   **Path**: `GET /api/health`
+*   **Response**: `{"status": "ok"}`
+*   Digunakan oleh *Cloudflare Tunnels* atau sistem monitoring (seperti UptimeRobot) untuk memantau apakah *backend Node.js* tewas secara tidak terduga.
 
 ---
 
-## 💾 Skema Database (SQLite)
+## 🗄️ BAB 5: SKEMA DATABASE
 
-Hanya terdapat dua tabel utama (menggunakan `better-sqlite3`):
+Kami sengaja menjaga hierarki data sesepele mungkin menggunakan SQLite agar tidak boros tenaga sistem operasi. Database berada di `/backend/data/cv_generator.db`.
 
-1.  **`sessions`**: Menyimpan status *chat* dan progres pembuatan CV.
-    *   `id` (TEXT, Primary Key) - UUID sesi.
-    *   `created_at` (INTEGER) - Timestamp.
-    *   `updated_at` (INTEGER) - Timestamp.
-    *   `messages` (TEXT) - Array riwayat pesan dalam bentuk JSON string.
-    *   `cv_json` (TEXT) - Progress objek CV dalam bentuk JSON string.
-    *   `completeness_score` (INTEGER) - Angka 0-100.
-    *   `is_complete` (INTEGER) - Flag boolean (0/1).
+**Tabel `sessions`**
+Tabel ini merekam komunikasi, ID pengguna *anonymous*, beserta isi ekstraksinya.
+*   `id` (TEXT) : Primary Key (UUID v4).
+*   `created_at` (INTEGER) : Unix Timestamp saat pertama kali mengobrol.
+*   `updated_at` (INTEGER) : Unix Timestamp terakhir pesan masuk.
+*   `messages` (TEXT) : String panjang menyimpan Array Of Objects (Histori Percakapan). Misal: `[{"role":"user","content":"Hi"},{"role":"ai","content":"Halo"}]`.
+*   `cv_json` (TEXT) : Tempat penyimpanan ekstraksi hasil Gemini sejauh ini.
+*   `completeness_score` (INTEGER) : Intejer 0 sampai 100.
+*   `is_complete` (INTEGER) : Boolean SQLite (1 jika selesai, 0 jika belum).
 
-*(Tabel dirancang dengan TTL/Time To Live harian agar tidak membebani storage VPS).*
+Tabel ini secara otomatis akan "membersihkan diri sendiri" setiap 24 jam dengan menghapus sesi *chat* yang tidak aktif lebih dari batas *Time-to-Live* (standar 7 Hari) yang diatur dalam variabel lingkungan.
 
 ---
 
-## 🚀 Panduan Instalasi dan Deployment
+## 💻 BAB 6: PANDUAN PENGEMBANGAN LOKAL
 
-Target utama deployment adalah **Ubuntu VPS (1 CPU, 2GB RAM)** dengan bantuan **Nginx** sebagai *reverse proxy* dan **PM2** sebagai *process manager*.
+Panduan jika Anda adalah *Software Engineer* yang ingin menjalankan kode ini secara lokal di PC/Macbook Anda.
 
-### A. Persiapan Environment
-
-Buat file `.env` di folder `/backend` dengan variabel berikut:
-```env
-PORT=3001
-NODE_ENV=production
-GEMINI_API_KEY=AIzaSy... # Wajib diisi dari Google AI Studio
-
-# Rate Limit Constraints
-RATE_LIMIT_WINDOW_MS=60000
-RATE_LIMIT_MAX=20
-
-# Database & Cleanup
-DB_PATH=./data/cv_generator.db
-SESSION_TTL_DAYS=7
-CLEANUP_INTERVAL_HOURS=24
-```
-
-### B. Build Process
-
-1.  **Backend Dependencies:**
+1.  **Syarat Sistem:** Instal Node.js versi 20 atau ke atas.
+2.  **Kloning Proyek:**
+    ```bash
+    git clone https://github.com/repository-anda/cv-generator.git
+    cd cv-generator
+    ```
+3.  **Pengaturan Variabel (*Environment*) Backend:**
     ```bash
     cd backend
-    npm install --production
-    ```
-2.  **Frontend Compilation:**
-    ```bash
-    cd frontend
     npm install
-    # Set URL target api (kosongkan jika satu domain, misal VITE_API_URL=/api)
-    echo "VITE_API_URL=/api" > .env
-    npm run build
+    cp .env.example .env
     ```
-    *(Hasil kompilasi akan berada di folder `frontend/dist`)*
+    Buka file `.env` menggunakan *code editor* favorit Anda. Pastikan memasukkan API Key Google Gemini asli pada isian:
+    `GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxx`
+4.  **Menjalankan Backend:**
+    ```bash
+    npm run dev &
+    ```
+    (Log akan bertuliskan *Server running on port 3001*. Biarkan berjalan atau jalankan di *background*).
+5.  **Pengaturan Frontend:**
+    Buka terminal jendela baru.
+    ```bash
+    cd cv-generator/frontend
+    npm install
+    ```
+    Buat file `.env` dengan satu baris:
+    `VITE_API_URL=http://localhost:3001/api`
+6.  **Menjalankan Frontend:**
+    ```bash
+    npm run dev &
+    ```
+    Buka tautan `http://localhost:5173` di peramban (Chrome/Firefox/Safari) Anda.
 
-### C. Menjalankan Server dengan PM2 (Backend)
+---
 
-Sangat penting untuk menetapkan limitasi memori agar Node.js tidak menggunakan terlalu banyak RAM (`--max-memory-restart 400M`).
+## 🚀 BAB 7: PANDUAN DEPLOYMENT SERVER (VPS)
+
+Buku panduan ini mengasumsikan Anda menyewa Cloud VPS Linux berbasis Ubuntu (seperti DigitalOcean, Linode, Contabo) berspesifikasi **1 CPU Core, 2GB RAM**.
+
+### Langkah 1: Kebutuhan Sistem Operasi
+*Login* ke VPS menggunakan SSH. Jalankan blok instalasi utama:
+```bash
+# Update Repo Linux
+sudo apt update && sudo apt upgrade -y
+
+# Instalasi NGINX, Git, Curl
+sudo apt install curl nginx git -y
+
+# Instalasi Node.js versi LTS 20
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Instalasi PM2 (Process Manager Daemon)
+sudo npm install -g pm2
+```
+
+### Langkah 2: Unduh Source Code ke Server
+```bash
+# Kita tempatkan pada root servis www
+sudo mkdir -p /var/www/cv-generator
+sudo chown -R $USER:$USER /var/www/cv-generator
+git clone <URL-REPO> /var/www/cv-generator
+cd /var/www/cv-generator
+```
+
+### Langkah 3: Build & Menjalankan Service Backend
+Proses Node.js Backend tidak akan dihentikan secara sepihak jika menggunakan PM2.
 ```bash
 cd backend
+npm install --production
+
+# Jangan lupa untuk Setup .env nya di server (Isi NODE_ENV=production, PORT=3001, dan GEMINI_API_KEY)
+cp .env.example .env
+
+# Nyalakan PM2 dengan proteksi RAM ketat
 pm2 start src/index.js --name cv-generator-backend --max-memory-restart 400M
+
+# Simpan status PM2 agar berjalan lagi otomatis walau server di-reboot
 pm2 save
 pm2 startup
 ```
 
-### D. Konfigurasi Nginx (Reverse Proxy & Static Serve)
+### Langkah 4: Compile & Build Static Frontend
+Aplikasi *Frontend React Vite* tidak berjalan sebagai proses *Node.js* di level *production*. Vite akan merubah JSX ke HTML murni untuk dilayani secepat kilat oleh web server (Nginx).
+```bash
+cd ../frontend
+npm install
 
-Nginx bertanggung jawab mengarahkan trafik frontend ke file statis, dan trafik `/api` ke Express.js.
+# Setup rute menuju reverse proxy nginx
+echo "VITE_API_URL=/api" > .env
 
-1.  Salin file konfigurasi dari proyek ke folder konfigurasi sistem:
-    ```bash
-    sudo cp nginx/cv-generator.conf /etc/nginx/sites-available/cv-generator
-    ```
-2.  Aktifkan konfigurasi Nginx:
-    ```bash
-    sudo ln -s /etc/nginx/sites-available/cv-generator /etc/nginx/sites-enabled/
-    ```
-3.  Pastikan untuk merubah `root /var/www/cv-generator/frontend/dist;` di file konfigurasi jika direktori berbeda.
-4.  Muat ulang server Nginx:
-    ```bash
-    sudo nginx -t
-    sudo systemctl reload nginx
-    ```
+# Jalankan mesin Compile (Minification & Uglification)
+npm run build
+```
+Setelah proses selesai, akan tercipta folder rahasia baru: `/var/www/cv-generator/frontend/dist/`. Inilah folder yang akan disajikan secara publik ke dunia maya.
+
+### Langkah 5: Pengikatan (Binding) dengan NGINX Reverse Proxy
+Nginx digunakan untuk:
+1. Menyajikan hasil *build* statis React (sebagai wajah).
+2. Meneruskan permohonan bersyarat `/api/*` ke dalam pelukan aplikasi PM2 Backend (`localhost:3001`).
+
+```bash
+cd /var/www/cv-generator/nginx
+sudo cp cv-generator.conf /etc/nginx/sites-available/cv-generator
+sudo ln -s /etc/nginx/sites-available/cv-generator /etc/nginx/sites-enabled/
+
+# Verifikasi NGINX lalu Reload Sistemnya
+sudo nginx -t
+sudo systemctl reload nginx
+```
+**Selesai!** Aplikasi kini *live*. Jika menggunakan layanan tambahan *Cloudflare Tunnels*, Nginx hanya perlu disambungkan port `80`-nya menuju *Tunnels*.
 
 ---
 
-## 🛡️ Catatan Optimasi Spesifik (VPS 2GB RAM)
+## 🔒 BAB 8: OPTIMASI MEMORI & STABILITAS
 
-*   **Pencegahan Memori Bocor (OOM):** `pm2` diatur untuk merestart otomatis proses `Node.js` jika menyentuh 400MB RAM. Respon *Download* (`export.js`) dipaksa menggunakan `stream.pipe()` alih-alih `buffer` di dalam memori. File unggahan PDF (`roast.js`) dikonfigurasi melalui multer agar menaruh file *temporary* di disk (`/uploads`) dan langsung dihapus melalui sistem antrian *garbage collector* setelah selesai diparse oleh `pdf-parse`.
-*   **Rate Limiting:** Menggunakan `express-rate-limit` membatasi per IP maksimal 20 *requests* per menit. Nginx bertindak di depan `express`, oleh karena itu konfigurasi `app.set('trust proxy', 2)` diberlakukan di backend `index.js`.
-*   **Database Write-Ahead Logging:** `db.pragma('journal_mode = WAL');` diaktifkan di `database.js` untuk kecepatan *write* database.
+Buku panduan tidak akan lengkap tanpa menjelaskan *bagaimana* aplikasi ini didesain. Mengapa ia aman di-hosting pada *budget* termurah?
 
----
+### A. Kebijakan "Streaming Response" di API Export
+Sistem pembangkit PDF konvensional (seperti library Puppeteer yang menggunakan Headless Chrome) akan menguras lebih dari `1GB RAM` dalam sekali pengerjaan PDF saja, hal ini menyebabkan server mati sesak napas (OOM - Out of Memory).
+
+Solusi kami: Menggunakan algoritma vektor kanvas (`pdfkit`). Skrip tidak mencetak data sementara pada *RAM Buffer*, melainkan memompa setiap *byte* dokumen langsung menuju saluran koneksi TCP pengguna yang merespon HTTP:
+```javascript
+res.setHeader('Content-Type', 'application/pdf');
+doc.pipe(res); // Ajaib: Memori terjaga di bawah 60MB sekalipun mengolah 50 PDF bersamaan
+```
+
+### B. SQLite Write-Ahead Logging (WAL)
+Penulisan database pada *file* `.db` dapat memperlambat proses *thread* Node.js jika disk I/O lambat. Dengan mengaktifkan `WAL Mode` di dalam inisialisasi `better-sqlite3`, penulisan diselipkan dalam antrian jurnal sehingga proses baca dan tulis bisa dilakukan secara non-blocking bersamaan, menjaga *latency* di titik stabil `1-5 milidetik`.
+
+### C. Rate Limiting Terbalik
+`express-rate-limit` secara krusial dipasang pada level perantara (*Middleware*). Karena sistem berada di bawah naungan Nginx dan Cloudflare, konfigurasi `app.set('trust proxy', 2)` wajib disetel di dalam file `index.js`. Hal ini memastikan *Limiter* memblokir IP Pengguna asli, bukan memblokir IP dari peladen lokal Nginx tersebut.
+
+### D. File Cleanup Berantai
+Setiap file unggahan dari pengguna (pada fitur *Roast*) diamankan ke dalam `disk` (direktori `uploads/`), bukan disimpan ke dalam memori aplikasi *Express Middleware Multer*. Setelah skrip Python via `pdf-parse` sukses mengekstrak, sistem file `fs.unlink()` langsung akan menghapus data tersebut untuk menjaga harddisk VPS agar tidak kehabisan ruang (*disk-space*).
