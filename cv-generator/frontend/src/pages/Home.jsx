@@ -4,7 +4,7 @@ import { MessageSquare, Flame } from 'lucide-react';
 
 function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-bg text-text retro-crt relative z-10">
+    <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center p-4 bg-bg text-text relative z-10">
       <div className="text-center mb-12">
         <h1 className="text-5xl font-display font-bold mb-4 text-accent uppercase tracking-widest drop-shadow-[0_0_10px_rgba(0,255,0,0.8)]">RetroChat AI</h1>
         <p className="text-xl text-muted uppercase tracking-widest">Build it. Roast it.<span className="blink">_</span></p>
