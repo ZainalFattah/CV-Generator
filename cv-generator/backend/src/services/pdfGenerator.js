@@ -31,9 +31,9 @@ function renderModernTemplate(doc, cvData) {
     // Personal Info
     if (personal) {
         doc.fontSize(24).font('Helvetica-Bold').text(personal.name || 'Nama Tidak Diketahui', { align: 'center' });
-        doc.fontSize(10).font('Helvetica').text(\`\${personal.email || ''} | \${personal.phone || ''} | \${personal.city || ''}\`, { align: 'center' });
+        doc.fontSize(10).font('Helvetica').text(`\${personal.email || ''} | \${personal.phone || ''} | \${personal.city || ''}`, { align: 'center' });
         if (personal.linkedin || personal.portfolio) {
-             doc.text(\`\${personal.linkedin || ''} | \${personal.portfolio || ''}\`, { align: 'center' });
+             doc.text(`\${personal.linkedin || ''} | \${personal.portfolio || ''}`, { align: 'center' });
         }
         doc.moveDown();
         if (personal.summary) {
@@ -51,16 +51,16 @@ function renderModernTemplate(doc, cvData) {
         doc.moveDown(0.5);
         experience.forEach(exp => {
             doc.fontSize(12).font('Helvetica-Bold').text(exp.position || '');
-            doc.fontSize(10).font('Helvetica-Oblique').text(\`\${exp.company || ''} | \${exp.start || ''} - \${exp.end || (exp.current ? 'Present' : '')}\`);
+            doc.fontSize(10).font('Helvetica-Oblique').text(`\${exp.company || ''} | \${exp.start || ''} - \${exp.end || (exp.current ? 'Present' : '')}`);
 
             if (exp.responsibilities && exp.responsibilities.length > 0) {
                  exp.responsibilities.forEach(res => {
-                     doc.fontSize(10).font('Helvetica').text(\`• \${res}\`, { indent: 15 });
+                     doc.fontSize(10).font('Helvetica').text(`• \${res}`, { indent: 15 });
                  });
             }
             if (exp.achievements && exp.achievements.length > 0) {
                  exp.achievements.forEach(ach => {
-                     doc.fontSize(10).font('Helvetica-Bold').text(\`• \${ach}\`, { indent: 15 });
+                     doc.fontSize(10).font('Helvetica-Bold').text(`• \${ach}`, { indent: 15 });
                  });
             }
             doc.moveDown(0.5);
@@ -73,9 +73,9 @@ function renderModernTemplate(doc, cvData) {
         doc.moveDown(0.5);
         education.forEach(edu => {
              doc.fontSize(12).font('Helvetica-Bold').text(edu.institution || '');
-             doc.fontSize(10).font('Helvetica-Oblique').text(\`\${edu.degree || ''} in \${edu.field || ''} | \${edu.year_start || ''} - \${edu.year_end || ''}\`);
+             doc.fontSize(10).font('Helvetica-Oblique').text(`\${edu.degree || ''} in \${edu.field || ''} | \${edu.year_start || ''} - \${edu.year_end || ''}`);
              if (edu.gpa) {
-                 doc.fontSize(10).font('Helvetica').text(\`GPA: \${edu.gpa}\`);
+                 doc.fontSize(10).font('Helvetica').text(`GPA: \${edu.gpa}`);
              }
              doc.moveDown(0.5);
         });
@@ -86,13 +86,13 @@ function renderModernTemplate(doc, cvData) {
         doc.fontSize(14).font('Helvetica-Bold').text('SKILLS');
         doc.moveDown(0.5);
         if (skills.technical && skills.technical.length > 0) {
-            doc.fontSize(10).font('Helvetica-Bold').text(\`Technical: \`, { continued: true }).font('Helvetica').text(skills.technical.join(', '));
+            doc.fontSize(10).font('Helvetica-Bold').text(`Technical: `, { continued: true }).font('Helvetica').text(skills.technical.join(', '));
         }
         if (skills.soft && skills.soft.length > 0) {
-            doc.fontSize(10).font('Helvetica-Bold').text(\`Soft: \`, { continued: true }).font('Helvetica').text(skills.soft.join(', '));
+            doc.fontSize(10).font('Helvetica-Bold').text(`Soft: `, { continued: true }).font('Helvetica').text(skills.soft.join(', '));
         }
         if (skills.languages && skills.languages.length > 0) {
-            doc.fontSize(10).font('Helvetica-Bold').text(\`Languages: \`, { continued: true }).font('Helvetica').text(skills.languages.join(', '));
+            doc.fontSize(10).font('Helvetica-Bold').text(`Languages: `, { continued: true }).font('Helvetica').text(skills.languages.join(', '));
         }
         doc.moveDown(0.5);
     }

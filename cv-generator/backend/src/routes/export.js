@@ -18,7 +18,7 @@ router.get('/pdf/:cv_id', async (req, res) => {
         const pdfBuffer = await generatePDF(cvData, template);
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', \`attachment; filename=CV_\${cvData.personal?.name?.replace(/\\s+/g, '_') || 'Generated'}.pdf\`);
+        res.setHeader('Content-Disposition', `attachment; filename=CV_\${cvData.personal?.name?.replace(/\\s+/g, '_') || 'Generated'}.pdf`);
         res.send(pdfBuffer);
     } catch (error) {
          console.error("Export PDF Error:", error);

@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
              return res.status(400).json({ error: 'CV and Job Description are required' });
         }
 
-        const prompt = \`
+        const prompt = `
         Tolong analisa kecocokan CV dan Job Description berikut:
 
         CV:
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 
         Job Description:
         \${jd_text}
-        \`;
+        `;
 
         const responseText = await generateContent(prompt, JOB_MATCH_PROMPT);
         const jsonMatch = responseText.match(/\\{.*\\}/s);

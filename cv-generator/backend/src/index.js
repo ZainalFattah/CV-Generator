@@ -9,6 +9,7 @@ import db from './db/database.js';
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 // Initialize Database

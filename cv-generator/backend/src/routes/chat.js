@@ -22,10 +22,10 @@ router.post('/', async (req, res) => {
                 completeness_score: 0,
                 is_complete: 0
             };
-            db.prepare(\`
+            db.prepare(`
                 INSERT INTO sessions (id, created_at, updated_at, messages, completeness_score, is_complete)
                 VALUES (?, ?, ?, ?, ?, ?)
-            \`).run(session.id, session.created_at, session.updated_at, session.messages, session.completeness_score, session.is_complete);
+            `).run(session.id, session.created_at, session.updated_at, session.messages, session.completeness_score, session.is_complete);
         } else {
             session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(session_id);
             if (!session) {
@@ -45,11 +45,11 @@ router.post('/', async (req, res) => {
 
         const completeness = calculateCompleteness(newCvJson);
 
-        db.prepare(\`
+        db.prepare(`
             UPDATE sessions
             SET updated_at = ?, messages = ?, cv_json = ?, completeness_score = ?, is_complete = ?
             WHERE id = ?
-        \`).run(
+        `).run(
             Date.now(),
             JSON.stringify(messages),
             JSON.stringify(newCvJson),

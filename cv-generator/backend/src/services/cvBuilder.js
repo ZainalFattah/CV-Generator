@@ -2,14 +2,14 @@ import { generateContent } from './gemini.js';
 import { CV_INTERVIEWER_PROMPT, VARIANT_GENERATOR_PROMPT } from '../utils/prompts.js';
 
 export async function processChat(messages, cvData) {
-    const prompt = \`
+    const prompt = `
     Ini adalah history chat kita sejauh ini:
     \${JSON.stringify(messages)}
 
     Dan ini adalah data CV yang telah diekstrak sebelumnya:
     \${JSON.stringify(cvData)}
 
-    Silakan berikan respons sesuai dengan instruksi yang diberikan.\`;
+    Silakan berikan respons sesuai dengan instruksi yang diberikan.`;
 
     try {
         const responseText = await generateContent(prompt, CV_INTERVIEWER_PROMPT);
@@ -30,12 +30,12 @@ export async function processChat(messages, cvData) {
 }
 
 export async function generateVariant(cvData, variant) {
-     const prompt = \`
+     const prompt = `
      Berikut adalah data CV:
      \${JSON.stringify(cvData)}
 
      Tolong optimalkan untuk variant: \${variant}
-     \`;
+     `;
 
      try {
           const responseText = await generateContent(prompt, VARIANT_GENERATOR_PROMPT);

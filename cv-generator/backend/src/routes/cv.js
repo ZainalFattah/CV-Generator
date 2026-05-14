@@ -28,10 +28,10 @@ router.post('/generate', async (req, res) => {
         }
 
         const cv_id = uuidv4();
-        db.prepare(\`
+        db.prepare(`
             INSERT INTO cvs (id, session_id, variant, cv_data, created_at)
             VALUES (?, ?, ?, ?, ?)
-        \`).run(cv_id, session_id, variant, JSON.stringify(cvData), Date.now());
+        `).run(cv_id, session_id, variant, JSON.stringify(cvData), Date.now());
 
         res.json({
             cv_id,
