@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 
 const Home = lazy(() => import('./pages/Home'));
-const About = lazy(() => import('./pages/About'));
 const ChatCV = lazy(() => import('./pages/ChatCV'));
 const RoastCV = lazy(() => import('./pages/RoastCV'));
 
@@ -16,7 +15,6 @@ function App() {
           <Suspense fallback={<div className="flex justify-center items-center h-full text-accent blink">LOADING...</div>}>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
               <Route path="/chat" element={<ChatCV />} />
               <Route path="/roast" element={<RoastCV />} />
             </Routes>

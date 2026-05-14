@@ -16,7 +16,7 @@ function Navbar() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
+    { name: 'About', path: '/#about' },
   ];
 
   return (
@@ -34,7 +34,8 @@ function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {navLinks.map((link) => {
-                const isActive = location.pathname === link.path;
+                const isActive = (link.path === '/' && location.pathname === '/' && !location.hash) ||
+                                 (link.path === '/#about' && location.hash === '#about');
                 return (
                   <Link
                     key={link.name}
@@ -75,7 +76,8 @@ function Navbar() {
         <div className="md:hidden border-t border-border bg-surface absolute w-full left-0">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => {
-              const isActive = location.pathname === link.path;
+              const isActive = (link.path === '/' && location.pathname === '/' && !location.hash) ||
+                               (link.path === '/#about' && location.hash === '#about');
               return (
                 <Link
                   key={link.name}
