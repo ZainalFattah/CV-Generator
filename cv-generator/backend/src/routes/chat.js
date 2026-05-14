@@ -1,12 +1,12 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
-import { processChat } from '../services/cvBuilder.js';
+import { processChat } from '../services/recruiterAgent.js';
 import { calculateCompleteness } from '../services/completeness.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
     try {
         let { session_id, message } = req.body;
         let session;
@@ -39,7 +39,8 @@ router.post('/', async (req, res) => {
         const cvData = session.cv_json ? JSON.parse(session.cv_json) : null;
 
         const aiResult = await processChat(messages, cvData);
-        const { reply, cv_json: newCvJson } = aiResult;
+        const reply = aiResult.reply || "Can you please rephrase that?";
+        const newCvJson = aiResult.cv_json || cvData;
 
         messages.push({ role: 'ai', content: reply });
 
@@ -68,8 +69,7 @@ router.post('/', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Chat Error:", error);
-        res.status(500).json({ error: 'Internal server error' });
+        next(error);
     }
 });
 

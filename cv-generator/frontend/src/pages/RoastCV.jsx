@@ -1,182 +1,145 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Upload, Flame, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { Upload, FileText, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function RoastCV() {
   const [file, setFile] = useState(null);
-  const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleRoast = async () => {
-    if (!file && !text.trim()) {
-        setError("Please upload a PDF or paste your CV text.");
-        return;
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) {
+      setError('Please select a file first.');
+      return;
     }
-
-    setLoading(true);
-    setError(null);
-    setResult(null);
 
     const formData = new FormData();
-    if (file) {
-        formData.append('file', file);
-    } else {
-        formData.append('cv_text', text);
-    }
+    formData.append('file', file);
+
+    setLoading(true);
+    setError('');
+    setResult(null);
 
     try {
-        const response = await axios.post(`${API_URL}/roast`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        setResult(response.data.roast_result);
-    } catch (err) {
-        console.error(err);
-        setError("Failed to roast CV. Please try again.");
-    } finally {
-        setLoading(false);
-    }
-  };
+      const response = await axios.post(`${API_URL}/roast`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-  const getSeverityIcon = (severity) => {
-      switch(severity) {
-          case 'critical': return <AlertTriangle className="text-warning" size={20} />;
-          case 'warning': return <AlertTriangle className="text-yellow-500" size={20} />;
-          case 'suggestion': return <Info className="text-blue-500" size={20} />;
-          default: return null;
-      }
+      setResult(response.data.roast_result);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to roast CV. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-bg p-4 md:p-8 flex flex-col items-center">
-        <h1 className="text-4xl font-display font-bold text-warning mb-2 flex items-center gap-3">
-            <Flame size={40} /> Roast My CV
-        </h1>
-        <p className="text-muted mb-8 text-center max-w-2xl">
-            Our AI Career Coach will brutally but constructively review your CV. Don't take it personally, we just want you to get hired.
-        </p>
+    <div className="min-h-screen bg-bg text-text p-4 md:p-8 font-mono">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-warning mb-2 uppercase border-b-2 border-warning pb-2">ROAST_SYSTEM_V1.0</h1>
+        <p className="text-muted mb-8 uppercase text-sm">Upload your CV to initiate brutal honesty mode.</p>
 
-        {!result && !loading && (
-            <div className="w-full max-w-2xl bg-surface border border-border p-8 rounded-xl">
-                <div className="mb-6">
-                    <label className="block text-sm font-bold mb-2">Upload PDF</label>
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-warning transition-colors cursor-pointer relative">
-                        <input
-                            type="file"
-                            accept=".pdf"
-                            onChange={(e) => setFile(e.target.files[0])}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        <Upload className="mx-auto text-muted mb-2" size={32} />
-                        <p className="text-muted">{file ? file.name : 'Drag & drop or click to upload PDF'}</p>
-                    </div>
-                </div>
+        {!result && (
+          <form onSubmit={handleUpload} className="bg-surface border-2 border-border p-8 text-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-border opacity-5"></div>
+            <div className="relative z-10 flex flex-col items-center justify-center">
+               <Upload size={64} className="text-warning mb-6" />
+               <h3 className="text-2xl font-bold text-text mb-4 uppercase">Select File</h3>
+               <p className="text-muted mb-6">PDF Only (Max 5MB)</p>
 
-                <div className="text-center text-muted my-4">OR</div>
+               <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  className="mb-6 block w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-sm file:font-semibold file:bg-warning file:text-bg hover:file:bg-opacity-80"
+               />
 
-                <div className="mb-6">
-                    <label className="block text-sm font-bold mb-2">Paste CV Text</label>
-                    <textarea
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
-                        className="w-full h-40 bg-bg border border-border rounded-lg p-4 text-text focus:border-warning outline-none resize-none"
-                        placeholder="Paste your CV content here..."
-                        disabled={!!file}
-                    />
-                </div>
+               <button
+                  type="submit"
+                  disabled={loading || !file}
+                  className="bg-warning text-bg px-8 py-3 font-bold uppercase tracking-wider disabled:opacity-50 hover:bg-white hover:text-black transition-colors border-2 border-warning"
+               >
+                  {loading ? 'PROCESSING...' : 'INITIATE ROAST'}
+               </button>
 
-                {error && <p className="text-warning mb-4 text-sm">{error}</p>}
-
-                <button
-                    onClick={handleRoast}
-                    className="w-full bg-warning text-white py-3 rounded-lg font-bold text-lg hover:bg-opacity-90 flex justify-center items-center gap-2"
-                >
-                    <Flame size={20} /> Roast It!
-                </button>
+               {error && <p className="text-accent-2 mt-4 blink">ERROR: {error}</p>}
             </div>
+          </form>
         )}
 
         {loading && (
-            <div className="flex flex-col items-center mt-20">
-                <Flame size={64} className="text-warning animate-pulse mb-4" />
-                <h2 className="text-xl font-bold">Heating up the oven...</h2>
-                <p className="text-muted">Analyzing every flaw in your CV.</p>
-            </div>
+           <div className="mt-8 text-center border-2 border-warning p-8 bg-surface">
+              <h2 className="text-2xl text-warning font-bold uppercase blink mb-4">ANALYZING FLAWS...</h2>
+              <div className="w-full bg-bg border border-warning h-4">
+                 <div className="bg-warning h-full w-1/2 animate-pulse"></div>
+              </div>
+           </div>
         )}
 
         {result && (
-            <div className="w-full max-w-4xl space-y-6">
-                {/* Score Card */}
-                <div className="bg-surface border border-border rounded-xl p-6 flex flex-col md:flex-row items-center gap-8">
-                    <div className="flex flex-col items-center justify-center w-32 h-32 rounded-full border-4 border-warning">
-                        <span className="text-4xl font-bold">{result.overall_score}</span>
-                        <span className="text-sm text-muted">/100</span>
-                    </div>
-                    <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-3xl font-bold mb-2">Grade: <span className="text-warning">{result.grade}</span></h2>
-                        <p className="text-lg italic text-muted">"{result.verdict}"</p>
-                    </div>
-                    <button onClick={() => setResult(null)} className="text-sm underline text-muted hover:text-text">Roast Another</button>
+          <div className="space-y-8 mt-8 fade-in">
+            <div className="border-2 border-warning bg-surface p-6">
+              <div className="flex justify-between items-center border-b border-warning pb-4 mb-4">
+                <h2 className="text-3xl font-bold uppercase text-warning">Diagnostic Report</h2>
+                <div className="text-center">
+                  <span className="text-xs uppercase text-muted block">Score</span>
+                  <span className="text-4xl font-bold text-warning">{result.overall_score}</span>
                 </div>
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Roast Points */}
-                    <div className="bg-surface border border-border rounded-xl p-6">
-                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 border-b border-border pb-2">
-                            <Flame className="text-warning" /> The Roast
-                        </h3>
-                        <div className="space-y-4">
-                            {result.roast_points.map((pt, idx) => (
-                                <div key={idx} className="bg-bg p-4 rounded-lg border border-border">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-1">{getSeverityIcon(pt.severity)}</div>
-                                        <div>
-                                            <span className="text-xs font-bold uppercase text-muted tracking-wider">{pt.section}</span>
-                                            <p className="font-bold mt-1 text-red-400">{pt.issue}</p>
-                                            <p className="text-sm mt-2 text-accent-2"><span className="font-bold">Fix:</span> {pt.fix}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="space-y-6">
-                         {/* Priority Fixes */}
-                         <div className="bg-surface border border-border rounded-xl p-6">
-                            <h3 className="text-xl font-bold mb-4 border-b border-border pb-2">Priority Fixes</h3>
-                            <ul className="space-y-2">
-                                {result.priority_fixes.map((fix, i) => (
-                                    <li key={i} className="flex gap-2 text-sm"><AlertTriangle className="text-warning shrink-0" size={16}/> {fix}</li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Strengths */}
-                        <div className="bg-surface border border-border rounded-xl p-6">
-                            <h3 className="text-xl font-bold mb-4 border-b border-border pb-2">Strengths (Not terrible)</h3>
-                            <ul className="space-y-2">
-                                {result.strengths.map((str, i) => (
-                                    <li key={i} className="flex gap-2 text-sm"><CheckCircle className="text-accent-2 shrink-0" size={16}/> {str}</li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Improved Summary */}
-                        {result.improved_summary && (
-                            <div className="bg-surface border border-accent rounded-xl p-6">
-                                <h3 className="text-xl font-bold mb-4 text-accent border-b border-border pb-2">Suggested Summary</h3>
-                                <p className="text-sm italic">{result.improved_summary}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+              </div>
+              <p className="text-xl italic text-muted">"{result.verdict}"</p>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="border border-border p-6 bg-surface">
+                  <h3 className="text-xl font-bold text-accent mb-4 uppercase flex items-center gap-2"><CheckCircle size={20}/> Strengths</h3>
+                  <ul className="space-y-2">
+                     {result.strengths.map((s, i) => (
+                        <li key={i} className="text-muted before:content-['>'] before:mr-2 before:text-accent">{s}</li>
+                     ))}
+                  </ul>
+               </div>
+
+               <div className="border border-accent-2 p-6 bg-surface">
+                  <h3 className="text-xl font-bold text-accent-2 mb-4 uppercase flex items-center gap-2"><AlertTriangle size={20}/> Priority Fixes</h3>
+                  <ul className="space-y-2">
+                     {result.priority_fixes.map((f, i) => (
+                        <li key={i} className="text-muted before:content-['>'] before:mr-2 before:text-accent-2">{f}</li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+
+            <div className="border-2 border-warning p-6 bg-surface">
+              <h3 className="text-2xl font-bold text-warning mb-6 uppercase border-b border-warning pb-2">Roast Points</h3>
+              <div className="space-y-6">
+                {result.roast_points.map((point, idx) => (
+                  <div key={idx} className="border-l-4 border-warning pl-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-lg uppercase text-text">{point.section}</span>
+                      <span className={`text-xs uppercase px-2 py-1 ${point.severity === 'critical' ? 'bg-accent-2 text-white' : 'bg-warning text-black'}`}>
+                        {point.severity}
+                      </span>
+                    </div>
+                    <p className="text-muted mb-2">Issue: {point.issue}</p>
+                    <p className="text-text font-bold">Fix: {point.fix}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-center">
+              <button onClick={() => setResult(null)} className="text-muted uppercase hover:text-text border-b border-muted hover:border-text">New Scan</button>
+            </div>
+          </div>
         )}
+      </div>
     </div>
   );
 }
