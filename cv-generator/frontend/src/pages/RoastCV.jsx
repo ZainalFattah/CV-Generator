@@ -41,7 +41,7 @@ function RoastCV() {
   };
 
   return (
-    <div className="min-h-screen bg-bg text-text p-4 md:p-8 font-mono">
+    <div className="flex-1 overflow-y-auto bg-bg text-text p-4 md:p-8 font-mono">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-warning mb-2 uppercase border-b-2 border-warning pb-2">ROAST_SYSTEM_V1.0</h1>
         <p className="text-muted mb-8 uppercase text-sm">Upload your CV to initiate brutal honesty mode.</p>

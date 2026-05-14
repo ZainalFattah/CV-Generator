@@ -88,8 +88,8 @@ function ChatCV() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-bg">
-      <div className="flex-1 flex flex-col border-r border-border h-full relative">
+    <div className="flex-1 flex flex-col min-h-0 bg-bg">
+      <div className="flex-1 flex flex-col border-r border-border h-full relative min-h-0">
         <div className="p-4 border-b border-border bg-surface flex items-center justify-between">
             <div className="flex-1">
                 <div className="text-sm text-muted mb-1 flex justify-between uppercase retro-text">
