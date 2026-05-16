@@ -39,7 +39,7 @@ function About() {
             <p className="text-muted">Pembuatan CV tanpa form yang panjang. Hanya dengan chat ringan, CV langsung tergenerasi dalam hitungan detik.</p>
           </div>
 
-          <div className="border border-accent-2 p-6 bg-surface hover:bg-[#110011] transition-colors">
+          <div className="border border-warning-2 p-6 bg-surface hover:bg-[#110500] transition-colors">
             <Shield className="text-accent-2 mb-4" size={40} />
             <h3 className="text-xl font-bold text-accent-2 mb-2 uppercase">ATS Friendly</h3>
             <p className="text-muted">Struktur CV yang dihasilkan dijamin ramah terhadap Applicant Tracking Systems, memperbesar peluang lolos seleksi.</p>
