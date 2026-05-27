@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useCVStore } from '../store/cvStore';
-import { Send, FileText, Download } from 'lucide-react';
+import { Send, FileText, Download, User, Bot, AlertCircle, RefreshCw } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -87,86 +87,150 @@ function ChatCV() {
     }
   };
 
+  const resetSession = () => {
+    if(confirm('Are you sure you want to start over? Current progress will be lost.')) {
+      setMessages([
+        {
+          role: 'ai',
+          content: 'Halo! Saya recruiter virtual kamu. Mari kita buat CV yang menarik bersama. Bisa mulai dengan nama lengkap dan sedikit perkenalan tentang diri kamu?',
+        },
+      ]);
+      setSessionId(null);
+      setIsReadyToGenerate(false);
+      setCvData(null);
+      setCompletenessScore(0);
+      setPdfUrl(null);
+    }
+  }
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-bg">
-      <div className="flex-1 flex flex-col border-r border-border h-full relative min-h-0">
-        <div className="p-4 border-b border-border bg-surface flex items-center justify-between">
-            <div className="flex-1">
-                <div className="text-sm text-muted mb-1 flex justify-between uppercase retro-text">
-                    <span>Extraction Progress</span>
-                    <span>{completenessScore}%</span>
-                </div>
-                <div className="w-full bg-border h-2">
-                    <div className="bg-accent h-2 transition-all duration-500" style={{ width: `${Math.min(completenessScore, 100)}%` }}></div>
-                </div>
-            </div>
+    <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-bg text-text">
+      {/* Sidebar - Progress & CV Data */}
+      <div className="w-full md:w-80 lg:w-96 bg-surface border-r border-border flex flex-col shrink-0 transition-all duration-300">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-lg font-bold text-text mb-4">Profile Completeness</h2>
+
+          <div className="mb-2 flex justify-between items-center">
+             <span className="text-sm font-medium text-muted">Status</span>
+             <span className="text-sm font-bold text-accent">{completenessScore || 0}%</span>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-2 mb-4 overflow-hidden">
+            <div
+              className="bg-accent h-2 transition-all duration-500 ease-out"
+              style={{ width: `${Math.min(completenessScore || 0, 100)}%` }}
+            ></div>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono">
+        <div className="flex-1 overflow-y-auto p-6 hidden md:block">
+          <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4 border-b border-border pb-2">Live Extraction</h3>
+          <div className="bg-slate-50 border border-border rounded-lg p-4 h-[calc(100%-2rem)] overflow-y-auto">
+            {cvData ? (
+              <pre className="text-xs font-mono text-muted whitespace-pre-wrap break-words">
+                {JSON.stringify(cvData, null, 2)}
+              </pre>
+            ) : (
+              <p className="text-sm text-muted italic">Data will appear here as we chat...</p>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-border bg-surface flex flex-col gap-2">
+            <button
+                onClick={generatePDF}
+                disabled={generatingPdf || !isReadyToGenerate}
+                className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${
+                isReadyToGenerate
+                    ? 'bg-text text-white hover:bg-slate-800 hover:shadow-md cursor-pointer'
+                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                }`}
+            >
+                <FileText size={18} />
+                {generatingPdf ? 'Generating...' : 'Generate CV'}
+            </button>
+            <a
+                href={pdfUrl || '#'}
+                download="my-cv.pdf"
+                onClick={(e) => {
+                    if (!pdfUrl) {
+                        e.preventDefault();
+                    }
+                }}
+                className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all shadow-sm ${pdfUrl ? 'bg-accent text-white hover:bg-indigo-700 shadow-md' : 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-50'}`}
+            >
+                <Download size={18} />
+                Download PDF
+            </a>
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col relative bg-bg">
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 p-4 bg-surface/80 backdrop-blur-md border-b border-border z-10 flex justify-between items-center shadow-sm">
+           <h2 className="text-sm font-bold text-text">AI Copilot</h2>
+           <button onClick={resetSession} className="text-xs flex items-center gap-1 text-muted hover:text-danger transition-colors font-medium">
+             <RefreshCw size={14} /> Reset Session
+           </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 pt-20 pb-32 space-y-6">
           {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] p-3 border ${msg.role === 'user' ? 'border-accent text-accent' : 'border-border text-text'}`}>
-                {msg.role === 'user' ? '> ' : 'SYSTEM: '}{msg.content}
+            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} fade-in`}>
+              <div className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-slate-200' : 'bg-indigo-100 text-accent'}`}>
+                  {msg.role === 'user' ? <User size={16} className="text-slate-600" /> : <Bot size={16} />}
+                </div>
+                <div className={`p-4 rounded-2xl shadow-sm ${
+                  msg.role === 'user'
+                    ? 'bg-text text-white rounded-tr-sm'
+                    : msg.isError
+                      ? 'bg-red-50 text-danger border border-red-100 rounded-tl-sm'
+                      : 'bg-surface border border-border text-text rounded-tl-sm'
+                }`}>
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                </div>
               </div>
             </div>
           ))}
           {loading && (
-            <div className="flex justify-start">
-               <div className="border border-border text-muted p-3 blink">PROCESSING...</div>
+            <div className="flex justify-start fade-in">
+              <div className="flex gap-3 max-w-[85%] flex-row">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-indigo-100 text-accent">
+                  <Bot size={16} />
+                </div>
+                <div className="p-4 rounded-2xl rounded-tl-sm bg-surface border border-border flex items-center gap-2 shadow-sm">
+                  <span className="w-2 h-2 bg-accent rounded-full animate-bounce"></span>
+                  <span className="w-2 h-2 bg-accent rounded-full animate-bounce delay-100"></span>
+                  <span className="w-2 h-2 bg-accent rounded-full animate-bounce delay-200"></span>
+                </div>
+              </div>
             </div>
-          )}
-
-          {isReadyToGenerate && (
-             <div className="flex flex-col items-center mt-6 mb-4 p-4 border border-accent bg-surface">
-                 <div className="text-accent mb-4 text-center blink">
-                    [ SYSTEM NOTIFICATION: CV DATA COMPLETE ]
-                 </div>
-                 <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                    <button
-                        onClick={generatePDF}
-                        disabled={generatingPdf}
-                        className="px-6 py-3 border border-accent text-accent hover:bg-accent hover:text-bg font-bold retro-text transition-colors flex items-center justify-center disabled:opacity-50"
-                    >
-                        <FileText className="mr-2" size={18} />
-                        {generatingPdf ? 'GENERATING...' : 'GENERATE CV'}
-                    </button>
-                    <a
-                        href={pdfUrl || '#'}
-                        download="my-cv.pdf"
-                        onClick={(e) => {
-                            if (!pdfUrl) {
-                                e.preventDefault();
-                            }
-                        }}
-                        className={`px-6 py-3 border border-accent font-bold retro-text transition-colors flex items-center justify-center ${pdfUrl ? 'bg-accent text-bg hover:opacity-90' : 'text-muted border-muted cursor-not-allowed opacity-50'}`}
-                    >
-                        <Download className="mr-2" size={18} />
-                        DOWNLOAD PDF
-                    </a>
-                 </div>
-             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={sendMessage} className="p-4 bg-surface border-t border-border flex gap-2">
-          <span className="text-accent flex items-center">{'>'}</span>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your answer..."
-            className="flex-1 bg-transparent border-b border-border px-4 py-2 text-text font-mono focus:outline-none focus:border-accent"
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className="text-accent p-2 disabled:opacity-50 hover:bg-opacity-90"
-          >
-            <Send size={20} />
-          </button>
-        </form>
+        {/* Input Area */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-bg via-bg to-transparent">
+          <form onSubmit={sendMessage} className="max-w-4xl mx-auto relative group">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your answer..."
+              className="w-full bg-surface border border-border text-text placeholder-muted px-6 py-4 pr-16 rounded-2xl focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-saas"
+              disabled={loading}
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="absolute right-2 top-2 bottom-2 bg-accent text-white p-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-accent transition-colors shadow-sm"
+            >
+              <Send size={18} className={loading ? 'opacity-0' : 'opacity-100'} />
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

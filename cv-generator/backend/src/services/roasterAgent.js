@@ -15,16 +15,33 @@ const FALLBACK_ROAST = {
   overall_score: 50,
   grade: "C",
   verdict: "Could not fully parse CV, but it needs improvement.",
+  ats_score: 40,
+  technical_depth_score: 50,
+  credibility_score: 50,
+  recruiter_impression: "Format is unclear or parsing failed.",
+  executive_summary: "A professional seeking to improve their CV format, but the automated review experienced difficulties parsing the content.",
   roast_points: [
     {
       section: "General",
       severity: "warning",
       issue: "Format is unclear or our systems struggled to read it.",
+      impact: "ATS systems might reject the CV before a human sees it.",
       fix: "Ensure your CV is well-structured text without complex formatting."
     }
   ],
   strengths: ["Tried to get it roasted"],
   priority_fixes: ["Simplify CV format for better ATS parsing"],
+  swot_analysis: {
+    strengths: ["Willingness to improve"],
+    weaknesses: ["CV structure hinders automated parsing"],
+    opportunities: ["Using standard templates could significantly improve ATS scores"],
+    threats: ["Automated rejection by enterprise ATS systems"]
+  },
+  career_fit: {
+    best_roles: ["Unknown"],
+    recommended_focus: "Focus on re-formatting your CV to standard ATS guidelines before applying.",
+    market_readiness: "Needs format revision"
+  },
   improved_summary: "A professional seeking to improve their CV format."
 };
 
