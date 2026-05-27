@@ -54,7 +54,7 @@ Proyek ini dibangun di atas pondasi lingkungan JavaScript *Full-Stack* (React + 
 *   **Bundler**: Vite v5 (dipilih karena waktu *compile* yang jauh lebih cepat dari Webpack atau CRA).
 *   **Routing**: React Router DOM v6 untuk navigasi SPA (Single Page Application) tanpa *reload* halaman.
 *   **State Management**: Zustand. Sangat ringan dan tidak memerlukan konfigurasi *boilerplate* seperti Redux. Mampu tersinkronisasi dengan *LocalStorage* sehingga data *chat* pengguna tidak hilang walau peramban di-*refresh*.
-*   **Styling**: Tailwind CSS v3. Tema khusus diset pada `tailwind.config.js` untuk memunculkan sensasi visual "Retro Terminal" (seperti latar belakang hitam `#0a0a0f`, teks hijau aksen `#00ffcc`, dan gaya ketikan *monospace*).
+*   **Styling**: Tailwind CSS v3. Tema khusus diset pada `tailwind.config.js` untuk memunculkan sensasi visual "Corporate Minimalist + Clean SaaS" (seperti latar belakang slate, teks slate gelap, dan tipografi modern seperti Inter).
 
 ### B. Backend (Server-Side Application)
 *   **Engine**: Node.js v20 LTS
@@ -78,7 +78,7 @@ Berikut merupakan peta direktori di dalam repositori untuk mempermudah pemahaman
 ├── cv-generator/
 │   ├── frontend/                 # KODE APLIKASI WEB
 │   │   ├── package.json          # Dependensi Frontend (Zustand, Tailwind, dll)
-│   │   ├── tailwind.config.js    # Setup Warna Tema Retro Terminal
+│   │   ├── tailwind.config.js    # Setup Warna Tema Corporate Minimalist
 │   │   ├── vite.config.js        # Konfigurasi port bundler
 │   │   └── src/
 │   │       ├── assets/           # File Statis (SVG, PNG)
