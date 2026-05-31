@@ -11,12 +11,12 @@ export async function evaluateTechnologies(technologies) {
     if (unknownTechs.length > 0) {
         // Fetch info for unknown technologies using Gemini with search grounding
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-3.5-flash",
             tools: [{ googleSearch: {} }] // Enable Google Search for dynamic grounding
         });
 
         const prompt = `
-Please verify the following list of technologies. Are they real software tools, frameworks, languages, or concepts?
+Please verify the following list of technologies using Google Search if necessary, especially for recently released technologies (e.g., late 2025 or 2026). Are they real software tools, frameworks, languages, or concepts?
 List: ${unknownTechs.join(', ')}
 
 Return ONLY valid JSON in this format:
