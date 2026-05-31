@@ -167,14 +167,14 @@ function ChatCV() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative bg-bg">
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 p-4 bg-surface/80 backdrop-blur-md border-b border-border z-10 flex justify-between items-center shadow-sm">
+        <div className="p-4 bg-surface/80 backdrop-blur-md border-b border-border z-10 flex justify-between items-center shadow-sm shrink-0">
            <h2 className="text-sm font-bold text-text">AI Copilot</h2>
            <button onClick={resetSession} className="text-xs flex items-center gap-1 text-muted hover:text-danger transition-colors font-medium">
              <RefreshCw size={14} /> Reset Session
            </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 pt-20 pb-32 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} fade-in`}>
               <div className={`flex gap-3 max-w-[85%] md:max-w-[75%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -211,7 +211,7 @@ function ChatCV() {
         </div>
 
         {/* Input Area */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-bg via-bg to-transparent">
+        <div className="p-4 md:p-6 bg-surface border-t border-border shrink-0">
           <form onSubmit={sendMessage} className="max-w-4xl mx-auto relative group">
             <input
               type="text"

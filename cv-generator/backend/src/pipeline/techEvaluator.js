@@ -11,7 +11,7 @@ export async function evaluateTechnologies(technologies) {
     if (unknownTechs.length > 0) {
         // Fetch info for unknown technologies using Gemini with search grounding
         const model = genAI.getGenerativeModel({
-            model: "gemini-3.5-flash",
+            model: "gemini-1.5-flash",
             tools: [{ googleSearch: {} }] // Enable Google Search for dynamic grounding
         });
 
